@@ -1,4 +1,4 @@
-import { ADD_TO_CART } from '../actions/cart';
+import { ADD_TO_CART, DELETE_FROM_CART } from '../actions/cart';
 import CartItem from  '../../models/cart-item';
 
 const initialState = {
@@ -33,10 +33,35 @@ const addItem = (state, action) => {
   };
 };
 
+const removeItem = (state, productId) => {
+  const selectedCartItem = state.items[productId];
+  const currentQty = selectedCartItem.quantity;
+  let updatedCartItems;
+  if (currentQty > 1) {
+    const updateCartItem = new CartItem(
+      currentQty - 1,
+      selectedCartItem.productPrice,
+      selectedCartItem.productTitle,
+      selectedCartItem.sum - selectedCartItem.productPrice
+      );
+    updatedCartItems = {...state.items, [productId]: updateCartItem }
+  } else {
+    updatedCartItems = { ...state.items };
+    delete updatedCartItems[productId];
+  }
+  return {
+    ...state,
+    items: updatedCartItems,
+    totalAmount: state.totalAmount - selectedCartItem.productPrice
+  };
+};
+
 const reducer = (state = initialState, action) => {
   switch (action.type) {
     case ADD_TO_CART:
       return  addItem(state, action);
+    case DELETE_FROM_CART:
+      return removeItem(state, action.productId);
     default:
       return state;
   };
